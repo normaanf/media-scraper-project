@@ -165,9 +165,10 @@ export default function App() {
 
   useEffect(() => {
     loadData(page);
-    if (!autoRefresh) return;
-    const i = setInterval(() => loadData(page), 5000);
-    return () => clearInterval(i);
+    if (page === 0 && autoRefresh) {
+      const i = setInterval(() => loadData(0), 5000);
+      return () => clearInterval(i);
+    }
   }, [page, filterType, autoRefresh]);
 
   /* -------------------- UI -------------------- */
