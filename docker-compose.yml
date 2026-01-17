@@ -13,13 +13,13 @@ services:
     networks:
       - scraper-net
 
-  # Backend Spring Boot
+  # Backend Node.js (Thay đổi ở đây)
   backend:
-    build: ./backend
+    build: ./backend-node  # <-- Trỏ vào thư mục mới
     ports:
       - "8080:8080"
     environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/scraperdb
+      - DATABASE_URL=postgresql://postgres:password@db:5432/scraperdb
     depends_on:
       - db
     networks:
@@ -27,8 +27,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1.0'     # Giới hạn 1 CPU
-          memory: 1024M   # Giới hạn 1GB RAM
+          cpus: '1.0'     # Vẫn giữ limit 1 CPU
+          memory: 1024M   # Vẫn giữ limit 1GB RAM
 
   # Frontend React
   frontend:
