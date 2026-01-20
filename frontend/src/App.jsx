@@ -70,9 +70,8 @@ const MediaCard = ({ item }) => (
 
       {/* TYPE BADGE */}
       <span
-        className={`absolute top-2 left-2 text-xs px-2 py-1 rounded-full text-white ${
-          item.type === "IMAGE" ? "bg-blue-600" : "bg-purple-600"
-        }`}
+        className={`absolute top-2 left-2 text-xs px-2 py-1 rounded-full text-white ${item.type === "IMAGE" ? "bg-blue-600" : "bg-purple-600"
+          }`}
       >
         {item.type}
       </span>
@@ -115,27 +114,31 @@ export default function App() {
   const [isScraping, setIsScraping] = useState(false);
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [hasNext, setHasNext] = useState(true);
+  const [search, setSearch] = useState("");
 
   /* -------------------- API -------------------- */
 
   const loadData = async (pageNum = 0) => {
     setLoading(true);
     try {
-      let url = `http://localhost:8080/api/media?page=${pageNum}&size=12&sort=id,desc`;
+      let url = `http://localhost:8080/api/media?page=${pageNum}&size=12`;
+
       if (filterType) url += `&type=${filterType}`;
+      if (search.trim()) url += `&search=${encodeURIComponent(search)}`;
 
       const res = await fetch(url);
       const json = await res.json();
 
       setData(json.content || []);
       setPage(json.number || 0);
-      setHasNext(!json.last);
-    } catch (e) {
+      setHasNext(pageNum + 1 < json.totalPages);
+    } catch {
       toast.error("Không tải được dữ liệu");
     } finally {
       setLoading(false);
     }
   };
+
 
   const handleScrape = async () => {
     if (!urls.trim()) {
@@ -169,7 +172,7 @@ export default function App() {
       const i = setInterval(() => loadData(0), 5000);
       return () => clearInterval(i);
     }
-  }, [page, filterType, autoRefresh]);
+  }, [page, filterType, search, autoRefresh]);
 
   /* -------------------- UI -------------------- */
 
@@ -236,7 +239,22 @@ export default function App() {
           </div>
 
           <div className="bg-white p-6 rounded-2xl shadow border">
-            <h3 className="text-sm font-medium mb-3">Filter</h3>
+            <h3 className="text-sm font-medium mb-3 flex items-center gap-2">
+              <Search className="w-4 h-4 text-blue-500" />
+              Filter & Search
+            </h3>
+
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(0);
+              }}
+              placeholder="Search by source URL..."
+              className="w-full mb-4 px-4 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+            />
+
             <div className="flex gap-2">
               {["", "IMAGE", "VIDEO"].map((t) => (
                 <button
@@ -245,11 +263,10 @@ export default function App() {
                     setFilterType(t);
                     setPage(0);
                   }}
-                  className={`flex-1 py-2 rounded-lg text-sm border transition ${
-                    filterType === t
-                      ? "bg-blue-50 border-blue-300 text-blue-700 font-semibold"
-                      : "hover:bg-gray-50"
-                  }`}
+                  className={`flex-1 py-2 rounded-lg text-sm border transition ${filterType === t
+                    ? "bg-blue-50 border-blue-300 text-blue-700 font-semibold"
+                    : "hover:bg-gray-50"
+                    }`}
                 >
                   {t || "ALL"}
                 </button>
